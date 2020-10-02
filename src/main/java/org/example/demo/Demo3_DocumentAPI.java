@@ -16,6 +16,7 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.VersionType;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.example.entity.Book;
 import org.example.utils.ESClient;
@@ -37,7 +38,7 @@ public class Demo3_DocumentAPI {
         book.setTitle("小王子");
         book.setAuthor("unknown");
         book.setPublishDate(new Date());
-        book.setDesc("很好看");
+        book.setDesc("很好看55555");
         String jsonString = JSON.toJSONString(book);
 
         //1. 创建indexRequest
@@ -49,10 +50,16 @@ public class Demo3_DocumentAPI {
         indexRequest.source(jsonString, XContentType.JSON);
         //2.3 本次索引的刷新策略. (测试时,可以使用IMMEDIATE)
         indexRequest.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL);
+        //2.4. 版本控制 只有当设置的版本大于文档当前版本,才能成功.
+        indexRequest.versionType(VersionType.EXTERNAL);
+        indexRequest.version(6);
+
+
         try {
             //3. 执行请求, 处理response
             IndexResponse response = client.index(indexRequest, RequestOptions.DEFAULT);
             String id = response.getId();
+            System.out.println("response.getVersion() = " + response.getVersion());
             System.out.println("created! id = " + id);
         } catch (IOException e) {
             e.printStackTrace();
@@ -69,6 +76,7 @@ public class Demo3_DocumentAPI {
             //3. response 处理
             System.out.println("getResponse.isExists() = " + getResponse.isExists());
             if (getResponse.isExists()) {
+                System.out.println("getResponse.getVersion() = " + getResponse.getVersion());
                 System.out.println("getResponse.getSourceAsString() = " + getResponse.getSourceAsString());
             }
         } catch (IOException e) {
