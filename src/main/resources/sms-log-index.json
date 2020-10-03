@@ -1,0 +1,65 @@
+{
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "default":{
+          "type":"ik_max_word"
+        },
+        "default_search":{
+          "type":"ik_smart"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "long"
+      },
+      "corpName": {
+        "type": "text"
+      },
+      "createDate": {
+        "type": "date",
+        "format": [
+          "yyyy-MM-dd"
+        ]
+      },
+      "fee": {
+        "type": "long"
+      },
+      "ipAddr": {
+        "type": "ip"
+      },
+      "longCode": {
+        "type": "keyword"
+      },
+      "mobile": {
+        "type": "keyword"
+      },
+      "operatorId": {
+        "type": "integer"
+      },
+      "province": {
+        "type": "keyword"
+      },
+      "replyTotal": {
+        "type": "integer"
+      },
+      "sendDate": {
+        "type": "date",
+        "format": [
+          "yyyy-MM-dd"
+        ]
+      },
+      "smsContext": {
+        "type": "text"
+      },
+      "state": {
+        "type": "integer"
+      }
+    }
+  }
+}

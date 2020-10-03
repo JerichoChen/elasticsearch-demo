@@ -1,25 +1,29 @@
-package org.example.demo;
+package org.example.sms.data;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONReader;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.example.entity.SmsLog;
 import org.example.utils.ESClient;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Objects;
 
-public class Demo2_IndexAPI {
+public class CreateIndexAndDoc {
     RestHighLevelClient client = ESClient.getInstance();
-    String indexToOperate = "book";
-    String settings = "index_book.json";
+
+    String indexToOperate = "sms-log-index";
+    String settings = "sms-log-index.json";
 
     @Test
     public void createIndex() {
@@ -42,27 +46,22 @@ public class Demo2_IndexAPI {
     }
 
     @Test
-    public void existsIndex() {
-        // 1. 创建request对象
-        GetIndexRequest getIndexRequest = new GetIndexRequest(indexToOperate);
-        //2. ESClient执行请求
-        try {
-            boolean exists = client.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
-            System.out.println("exists = " + exists);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    public void mockData() {
+        //1. 创建批量请求
+        BulkRequest bulkRequest = new BulkRequest();
+        //2. 模拟生成源数据
+        List<SmsLog> smsLogList = MockDataUtil.mock();
+        //3. 往批量请求中添加doc数据
+        smsLogList.forEach(smsLog -> {
+            String jsonString = JSON.toJSONString(smsLog);
+            IndexRequest indexRequest = new IndexRequest(indexToOperate).id(smsLog.getId() + "").source(jsonString, XContentType.JSON);
+            bulkRequest.add(indexRequest);
+        });
 
-    @Test
-    public void deleteIndex() {
-        //1. 创建请求
-        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexToOperate);
         try {
-            //2. 客户端执行请求.  Note: 如果索引不存在, 删除会报错.
-            AcknowledgedResponse acknowledgedResponse = client.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
-            //3. 响应输出.
-            System.out.println("deleted = " + acknowledgedResponse.isAcknowledged());
+            //4. 执行请求
+            BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+            System.out.println("bulkResponse.hasFailures() = " + bulkResponse.hasFailures());
         } catch (IOException e) {
             e.printStackTrace();
         }
