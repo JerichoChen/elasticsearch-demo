@@ -18,6 +18,31 @@ public class TestTermQuery {
     RestHighLevelClient client = ESClient.getInstance();
     String indexToOperate = "sms-log-index";
 
+    /**
+     * POST /sms-log-index/_search
+     * {
+     *   "from": 0,
+     *   "size": 2,
+     *   "query": {
+     *     "term": {
+     *       "province": {
+     *         "value": "浙江"
+     *       }
+     *     }
+     *   },
+     *   "sort": [
+     *     {
+     *       "ipAddr": {
+     *         "order": "desc"
+     *       },
+     *       "fee": {
+     *         "order": "desc"
+     *       }
+     *     }
+     *   ]
+     * }
+     * @throws IOException
+     */
     @Test
     public void termQuery() throws IOException {
         //1. 创建searchRequest请求对象
@@ -40,6 +65,18 @@ public class TestTermQuery {
         }
     }
 
+    /**
+     * POST /sms-log-index/_search
+     * {
+     *   "query": {
+     *     "terms": {
+     *       "province": [ #FIELD
+     *         "上海",      #VALUE1
+     *         "北京"       #vALUE2...
+     *       ]
+     *     }
+     *   }
+     * }*/
     @Test
     public void termsQuery() throws IOException {
         //1. 创建searchRequest请求对象
@@ -61,6 +98,5 @@ public class TestTermQuery {
             System.out.println(hit.getSourceAsString());
         }
     }
-
 
 }
