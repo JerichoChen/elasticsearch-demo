@@ -8,6 +8,7 @@ import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.example.entity.SmsLog;
 import org.example.utils.ESClient;
 import org.junit.Test;
@@ -47,5 +48,47 @@ public class TestOtherQuery {
             System.out.println(hit.getSourceAsString());
         }
     }
+
+    @Test
+    public void wildcardQuery() throws IOException {
+        SearchRequest searchRequest = new SearchRequest(indexToOperate);
+        SearchSourceBuilder builder = new SearchSourceBuilder()
+                .query(QueryBuilders.wildcardQuery(SmsLog.CORP_NAME, "阿里*")); //对比 "阿里*"
+        searchRequest.source(builder);
+        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println("response.getHits().getTotalHits() = " + response.getHits().getTotalHits());
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsString());
+        }
+    }
+
+    @Test
+    public void regexpQuery() throws IOException {
+        SearchRequest searchRequest = new SearchRequest(indexToOperate);
+        SearchSourceBuilder builder = new SearchSourceBuilder()
+                .query(QueryBuilders.regexpQuery(SmsLog.MOBILE, "13[5|9].*")); //135或者139开头的电话号
+        searchRequest.source(builder);
+        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println("response.getHits().getTotalHits() = " + response.getHits().getTotalHits());
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsString());
+        }
+    }
+
+    @Test
+    public void rangeQuery() throws IOException {
+        SearchRequest searchRequest = new SearchRequest(indexToOperate);
+        SearchSourceBuilder builder = new SearchSourceBuilder()
+                .query(QueryBuilders.rangeQuery(SmsLog.FEE).gte(45).lte(50))
+//                .query(QueryBuilders.rangeQuery(SmsLog.FEE).from(45).to(50))
+                .sort(SmsLog.FEE, SortOrder.DESC);
+        searchRequest.source(builder);
+        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println("response.getHits().getTotalHits() = " + response.getHits().getTotalHits());
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsString());
+        }
+    }
+
 
 }
