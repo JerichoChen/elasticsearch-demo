@@ -57,13 +57,12 @@ public class TestMatchQuery {
 
     @Test
     public void matchAllQuery() throws IOException {
-        SearchRequest searchRequest = new SearchRequest(indexToOperate);
         SearchSourceBuilder builder = new SearchSourceBuilder();
         builder.query(QueryBuilders.matchAllQuery());
         builder.sort(SmsLog.FEE, SortOrder.ASC);
         builder.sort(SmsLog.ID, SortOrder.ASC);
-        searchRequest.source(builder);
-        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+        builder.size(20);
+        SearchResponse response = search(builder, indexToOperate);
         System.out.println("response.getHits().getTotalHits() = " + response.getHits().getTotalHits());
         for (SearchHit hit : response.getHits().getHits()) {
             System.out.println(hit.getSourceAsString());
@@ -81,5 +80,11 @@ public class TestMatchQuery {
         for (SearchHit hit : response.getHits().getHits()) {
             System.out.println(hit.getSourceAsString());
         }
+    }
+
+    private SearchResponse search(SearchSourceBuilder builder, String... indices) throws IOException {
+        SearchRequest searchRequest = new SearchRequest(indices);
+        searchRequest.source(builder);
+        return client.search(searchRequest, RequestOptions.DEFAULT);
     }
 }
